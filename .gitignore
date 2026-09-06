@@ -1,1 +1,4 @@
 SKI*
+# Build output of SimplyKnock.vcxproj (bin\x64\Release\SimplyKnock.dll is what buildcheck pairs)
+bin/
+obj/

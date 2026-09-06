@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6B7D2E0A-5D33-4F5C-9C4E-2C1A3F8B9E10}</ProjectGuid>
+    <RootNamespace>SimplyKnock</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>SimplyKnock</ProjectName>
+  </PropertyGroup>
+  <!--
+    Special Edition build of Chesko's SKSE plugin (src/). One native, GetLinkedDoor - see
+    src/SimplyKnock.cpp. Same shape as PapyrusUtil.vcxproj in this workspace: every dependency
+    path is a property that can be overridden on the command line
+    (msbuild SimplyKnock.vcxproj -p:SKSE64Root=... -p:SKSELibDir=...). Defaults assume the
+    IcZ Skyrim workspace layout: this repo in "Project Improvement\", ianpatt's skse64 and
+    common checkouts at the workspace root, and the SKSE libraries staged by "Runtime 1.7.104"
+    (common.lib, skse64_common.lib and the static skse64_1_7_104_static.lib made from the SKSE
+    DLL's objects minus skse64.obj - the import library alone does not carry the game globals
+    LookupREFRByHandle / g_invalidRefHandle this plugin links against).
+
+    RUNTIME_VERSION must match the skse64 objects in that static library.
+  -->
+  <PropertyGroup Label="Dependencies">
+    <SKSE64Root Condition="'$(SKSE64Root)'==''">$(MSBuildProjectDirectory)\..\..\skse64\</SKSE64Root>
+    <CommonRoot Condition="'$(CommonRoot)'==''">$(MSBuildProjectDirectory)\..\..\common\</CommonRoot>
+    <SKSELibDir Condition="'$(SKSELibDir)'==''">$(MSBuildProjectDirectory)\..\Runtime 1.7.104\SKSE64 2.3.1\lib\</SKSELibDir>
+    <SKSEStaticLib Condition="'$(SKSEStaticLib)'==''">skse64_1_7_104_static.lib</SKSEStaticLib>
+    <SKSERuntimeVersion Condition="'$(SKSERuntimeVersion)'==''">0x1070680</SKSERuntimeVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(MSBuildProjectDirectory)\bin\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(MSBuildProjectDirectory)\obj\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>SimplyKnock</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(MSBuildProjectDirectory)\src;$(SKSE64Root);$(CommonRoot);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <!-- Without this every skse64 header fails with "_MEMBER_FN_BASE_TYPE is not a class or namespace";
+           the skse64 projects get it from sheets/ForcedInclude.props. -->
+      <ForcedIncludeFiles>common/IPrefix.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;RUNTIME;RUNTIME_VERSION=$(SKSERuntimeVersion);_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SKSELibDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <!-- comdlg32: common.lib's IFileStream pulls GetOpenFileNameA / GetSaveFileNameA. -->
+      <AdditionalDependencies>common.lib;skse64_common.lib;$(SKSEStaticLib);user32.lib;shell32.lib;ole32.lib;advapi32.lib;version.lib;dbghelp.lib;shlwapi.lib;comdlg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\SimplyKnock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\SimplyKnock.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
