@@ -52,7 +52,7 @@ Output `bin\x64\Release\SimplyKnock.dll` (git-ignored), 182,784 bytes.
 | `skseaudit.py` | OK (versionIndependence=0x0) | OK |
 
 Only the PE timestamp and 512 bytes of link layout differ. Deployed 2026-09-06 22:0x; the
-orphan is kept at `Project Bin\mo2-backups\Simply Knock SE-2026-09-06\SKSE\Plugins\`.
+orphan is kept at `_To_Delete\mo2-backups\Simply Knock SE-2026-09-06\SKSE\Plugins\`.
 `buildcheck.py` now pairs the deployed DLL with `bin\x64\Release\` (ARTIFACTS), so the mod is
 **tracked** and a stale rebuild is visible; the `mod-sources.json` line is gone.
 
